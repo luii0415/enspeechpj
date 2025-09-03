@@ -86,6 +86,10 @@ export function Klleon() {
       console.log("SDK 초기화 시작...", {
         SDK_KEY: SDK_KEY?.substring(0, 10) + "...",
         AVATAR_ID,
+        voice_code: "en_us",
+        voice_tts_speech_speed: 0.8,
+        enable_microphone: true,
+        log_level: "debug",
       });
 
       // 4. SDK 초기화
