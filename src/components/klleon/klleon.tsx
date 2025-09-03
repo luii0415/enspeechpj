@@ -126,7 +126,7 @@ export function Klleon() {
     }
   };
 
-  // 다음 대사 읽기 함수
+  // 다음 대사 읽기 함수 (순환 없음)
   const playNextEcho = () => {
     const { KlleonChat } = window;
 
@@ -136,12 +136,20 @@ export function Klleon() {
     }
 
     if (echoMessages.length > 0) {
+      // 배열 범위를 벗어나면 더 이상 진행하지 않음
+      if (currentEchoIndex >= echoMessages.length) {
+        alert(
+          "모든 대사를 읽었습니다. '처음부터' 버튼을 눌러서 다시 시작하세요."
+        );
+        return;
+      }
+
       const messageToSpeak = echoMessages[currentEchoIndex];
       console.log("Speaking:", messageToSpeak);
       KlleonChat.echo(messageToSpeak);
 
-      // 다음 인덱스로 이동 (마지막이면 처음으로 돌아감)
-      setCurrentEchoIndex((prevIndex) => (prevIndex + 1) % echoMessages.length);
+      // 다음 인덱스로 이동 (순환 없음)
+      setCurrentEchoIndex(currentEchoIndex + 1);
     }
   };
 
@@ -270,9 +278,9 @@ export function Klleon() {
             }}
           >
             <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-              현재 대사 ({currentEchoIndex}/{echoMessages.length}):
+              다음 대사
             </div>
-            <div>"{echoMessages[currentEchoIndex] || "없음"}"</div>
+            <div>"{echoMessages[currentEchoIndex] || "모든 대사 완료"}"</div>
           </div>
 
           {/* 대사 제어 버튼들 */}
@@ -283,7 +291,8 @@ export function Klleon() {
                 !isSDKInitialized ||
                 isAvatarSpeaking ||
                 echoMessages.length === 0 ||
-                isInitializing
+                isInitializing ||
+                currentEchoIndex >= echoMessages.length // 마지막 대사까지 읽었으면 비활성화
               }
               style={{
                 flex: 1,
@@ -294,7 +303,8 @@ export function Klleon() {
                   !isSDKInitialized ||
                   isAvatarSpeaking ||
                   echoMessages.length === 0 ||
-                  isInitializing
+                  isInitializing ||
+                  currentEchoIndex >= echoMessages.length
                     ? "#6c757d"
                     : "#007bff",
                 color: "white",
@@ -302,14 +312,15 @@ export function Klleon() {
                   !isSDKInitialized ||
                   isAvatarSpeaking ||
                   echoMessages.length === 0 ||
-                  isInitializing
+                  isInitializing ||
+                  currentEchoIndex >= echoMessages.length
                     ? "not-allowed"
                     : "pointer",
                 fontSize: "14px",
                 fontWeight: "bold",
               }}
             >
-              대사 읽기
+              {currentEchoIndex >= echoMessages.length ? "완료" : "대사 읽기"}
             </button>
             <button
               onClick={resetEchoIndex}
