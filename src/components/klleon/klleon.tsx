@@ -96,6 +96,10 @@ export function Klleon() {
       await KlleonChat.init({
         sdk_key: SDK_KEY,
         avatar_id: AVATAR_ID,
+        voice_code: "en_us",
+        voice_tts_speech_speed: 0.8,
+        enable_microphone: true,
+        log_level: "debug",
       });
 
       setIsSDKInitialized(true);
