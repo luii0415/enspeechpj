@@ -10,6 +10,7 @@ export function Klleon() {
   const [isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
   const [status, setStatus] = useState<Status>("IDLE");
   const [isSDKInitialized, setIsSDKInitialized] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(false);
 
   // 에코 메시지 관련 상태
   const [echoMessages] = useState<string[]>(echoMessagesData);
@@ -17,9 +18,8 @@ export function Klleon() {
 
   const avatarRef = useRef<HTMLElement & AvatarProps>(null);
 
-  // 컴포넌트 마운트 시 이벤트 리스너만 설정 (SDK 초기화는 하지 않음)
+  // 컴포넌트 마운트 시 아바타 기본 설정
   useEffect(() => {
-    // 아바타 설정
     if (avatarRef.current) {
       avatarRef.current.videoStyle = {
         borderRadius: "30px",
@@ -31,11 +31,21 @@ export function Klleon() {
 
   // SDK 시작 함수
   const startSDK = async () => {
+    if (isInitializing || isSDKInitialized) return;
+
+    setIsInitializing(true);
     const { KlleonChat } = window;
 
     try {
+      // 기존 이벤트 리스너 정리 (혹시 모를 중복 방지)
+      KlleonChat.destroy?.();
+
+      // 잠시 대기 (DOM이 완전히 준비되도록)
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       // 1. Status 이벤트 리스너 등록
       KlleonChat.onStatusEvent((status) => {
+        console.log("Status Event:", status);
         setStatus(status);
         if (status === "VIDEO_CAN_PLAY") {
           console.log("아바타 영상 재생 준비 완료!");
@@ -55,7 +65,17 @@ export function Klleon() {
         }
       });
 
-      // 3. SDK 초기화 (실제 키 사용)
+      // 3. SDK 초기화 전에 환경변수 확인
+      if (!SDK_KEY || !AVATAR_ID) {
+        throw new Error("API 키 또는 아바타 ID가 설정되지 않았습니다.");
+      }
+
+      console.log("SDK 초기화 시작...", {
+        SDK_KEY: SDK_KEY?.substring(0, 10) + "...",
+        AVATAR_ID,
+      });
+
+      // 4. SDK 초기화
       await KlleonChat.init({
         sdk_key: SDK_KEY,
         avatar_id: AVATAR_ID,
@@ -65,22 +85,25 @@ export function Klleon() {
       console.log("SDK 초기화 완료");
     } catch (error) {
       console.error("SDK 초기화 실패:", error);
+      alert(`SDK 초기화에 실패했습니다: ${error.message}`);
+      setStatus("IDLE");
+    } finally {
+      setIsInitializing(false);
     }
   };
 
   // SDK 종료 함수
   const stopSDK = async () => {
+    if (!isSDKInitialized) return;
+
     const { KlleonChat } = window;
 
     try {
-      // 빈 키로 재초기화하여 종료
-      await KlleonChat.init({
-        sdk_key: "",
-        avatar_id: AVATAR_ID,
-      });
+      // 발화 중단
+      KlleonChat.stopSpeech?.();
 
-      // 또는 완전 종료
-      KlleonChat.destroy();
+      // SDK 완전 종료
+      KlleonChat.destroy?.();
 
       setIsSDKInitialized(false);
       setStatus("IDLE");
@@ -102,6 +125,7 @@ export function Klleon() {
 
     if (echoMessages.length > 0) {
       const messageToSpeak = echoMessages[currentEchoIndex];
+      console.log("Speaking:", messageToSpeak);
       KlleonChat.echo(messageToSpeak);
 
       // 다음 인덱스로 이동 (마지막이면 처음으로 돌아감)
@@ -145,6 +169,7 @@ export function Klleon() {
           style={{
             flex: 1,
             minHeight: "400px",
+            border: isSDKInitialized ? "2px solid #28a745" : "2px solid #ddd",
           }}
           class=""
         ></avatar-container>
@@ -164,39 +189,55 @@ export function Klleon() {
           <div style={{ fontSize: "12px", color: "#666" }}>
             Status: {status} {isAvatarSpeaking && "(발화중)"}
             <br />
-            SDK 상태: {isSDKInitialized ? "사용 중" : "대기 중"}
+            SDK 상태:{" "}
+            {isInitializing
+              ? "초기화 중..."
+              : isSDKInitialized
+              ? "사용 중"
+              : "대기 중"}
+            <br />
+            API 키: {SDK_KEY ? "설정됨" : "없음"} | 아바타 ID:{" "}
+            {AVATAR_ID ? "설정됨" : "없음"}
           </div>
 
           {/* SDK 시작/종료 버튼 */}
           <div style={{ display: "flex", gap: "8px" }}>
             <button
               onClick={startSDK}
-              disabled={isSDKInitialized}
+              disabled={isSDKInitialized || isInitializing}
               style={{
                 flex: 1,
                 padding: "10px 16px",
                 borderRadius: "6px",
                 border: "none",
-                background: isSDKInitialized ? "#6c757d" : "#28a745",
+                background:
+                  isSDKInitialized || isInitializing ? "#6c757d" : "#28a745",
                 color: "white",
-                cursor: isSDKInitialized ? "not-allowed" : "pointer",
+                cursor:
+                  isSDKInitialized || isInitializing
+                    ? "not-allowed"
+                    : "pointer",
                 fontSize: "14px",
                 fontWeight: "bold",
               }}
             >
-              사용 시작
+              {isInitializing ? "초기화 중..." : "사용 시작"}
             </button>
             <button
               onClick={stopSDK}
-              disabled={!isSDKInitialized}
+              disabled={!isSDKInitialized || isInitializing}
               style={{
                 flex: 1,
                 padding: "10px 16px",
                 borderRadius: "6px",
                 border: "none",
-                background: !isSDKInitialized ? "#6c757d" : "#dc3545",
+                background:
+                  !isSDKInitialized || isInitializing ? "#6c757d" : "#dc3545",
                 color: "white",
-                cursor: !isSDKInitialized ? "not-allowed" : "pointer",
+                cursor:
+                  !isSDKInitialized || isInitializing
+                    ? "not-allowed"
+                    : "pointer",
                 fontSize: "14px",
                 fontWeight: "bold",
               }}
@@ -229,7 +270,8 @@ export function Klleon() {
               disabled={
                 !isSDKInitialized ||
                 isAvatarSpeaking ||
-                echoMessages.length === 0
+                echoMessages.length === 0 ||
+                isInitializing
               }
               style={{
                 flex: 1,
@@ -239,14 +281,16 @@ export function Klleon() {
                 background:
                   !isSDKInitialized ||
                   isAvatarSpeaking ||
-                  echoMessages.length === 0
+                  echoMessages.length === 0 ||
+                  isInitializing
                     ? "#6c757d"
                     : "#007bff",
                 color: "white",
                 cursor:
                   !isSDKInitialized ||
                   isAvatarSpeaking ||
-                  echoMessages.length === 0
+                  echoMessages.length === 0 ||
+                  isInitializing
                     ? "not-allowed"
                     : "pointer",
                 fontSize: "14px",
@@ -257,16 +301,18 @@ export function Klleon() {
             </button>
             <button
               onClick={resetEchoIndex}
-              disabled={!isSDKInitialized || isAvatarSpeaking}
+              disabled={!isSDKInitialized || isAvatarSpeaking || isInitializing}
               style={{
                 padding: "10px 16px",
                 borderRadius: "6px",
                 border: "1px solid #ddd",
                 background:
-                  !isSDKInitialized || isAvatarSpeaking ? "#6c757d" : "#6f42c1",
+                  !isSDKInitialized || isAvatarSpeaking || isInitializing
+                    ? "#6c757d"
+                    : "#6f42c1",
                 color: "white",
                 cursor:
-                  !isSDKInitialized || isAvatarSpeaking
+                  !isSDKInitialized || isAvatarSpeaking || isInitializing
                     ? "not-allowed"
                     : "pointer",
                 fontSize: "14px",
