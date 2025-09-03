@@ -85,7 +85,6 @@ export function Klleon() {
       console.log("SDK 초기화 완료");
     } catch (error) {
       console.error("SDK 초기화 실패:", error);
-      alert(`SDK 초기화에 실패했습니다: ${error.message}`);
       setStatus("IDLE");
     } finally {
       setIsInitializing(false);
