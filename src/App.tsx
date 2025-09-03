@@ -1,7 +1,12 @@
 import "./App.css";
+import { Klleon } from "./components/klleon/klleon";
 
 function App() {
-  return <></>;
+  return (
+    <>
+      <Klleon />
+    </>
+  );
 }
 
 export default App;
