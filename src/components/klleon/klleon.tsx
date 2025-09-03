@@ -18,7 +18,7 @@ export function Klleon() {
 
   const avatarRef = useRef<HTMLElement & AvatarProps>(null);
 
-  // 컴포넌트 마운트 시 아바타 기본 설정
+  // 컴포넌트 마운트 시 아바타 기본 설정 및 cleanup 등록
   useEffect(() => {
     if (avatarRef.current) {
       avatarRef.current.videoStyle = {
@@ -27,7 +27,20 @@ export function Klleon() {
       };
       avatarRef.current.volume = 100;
     }
-  }, []);
+
+    // 자동 세션 정리: 사용자가 페이지를 떠날 때 SDK 세션을 자동으로 종료하여 메모리 누수 방지
+    return () => {
+      if (isSDKInitialized) {
+        const { KlleonChat } = window;
+        try {
+          KlleonChat.destroy?.();
+          console.log("컴포넌트 언마운트: 세션 정리 완료");
+        } catch (error) {
+          console.error("컴포넌트 언마운트: 세션 정리 실패", error);
+        }
+      }
+    };
+  }, [isSDKInitialized]);
 
   // SDK 시작 함수
   const startSDK = async () => {
@@ -257,7 +270,7 @@ export function Klleon() {
             }}
           >
             <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-              현재 대사 ({currentEchoIndex + 1}/{echoMessages.length}):
+              현재 대사 ({currentEchoIndex}/{echoMessages.length}):
             </div>
             <div>"{echoMessages[currentEchoIndex] || "없음"}"</div>
           </div>
@@ -296,7 +309,7 @@ export function Klleon() {
                 fontWeight: "bold",
               }}
             >
-              다음 대사 읽기
+              대사 읽기
             </button>
             <button
               onClick={resetEchoIndex}
