@@ -1,6 +1,6 @@
 import "./App.css";
 import AzureSpeech from "./components/azure/Azure";
-import { Klleon } from "./components/klleon/Klleon";
+import Klleon from "./components/Klleon/Klleon";
 
 function App() {
   return (

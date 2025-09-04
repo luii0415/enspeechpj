@@ -6,7 +6,7 @@ import echoMessagesData from "../../data/echoMessages.json";
 const SDK_KEY = import.meta.env.VITE_API_KEY;
 const AVATAR_ID = import.meta.env.VITE_API_Model;
 
-export function Klleon() {
+export default function Klleon() {
   const [isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
   const [status, setStatus] = useState<Status>("IDLE");
   const [isSDKInitialized, setIsSDKInitialized] = useState(false);
