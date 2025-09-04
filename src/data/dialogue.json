@@ -1,0 +1,12 @@
+[
+  { "speaker": "Barista", "text": "Hi there! What can I get for you today?" },
+  { "speaker": "Customer", "text": "Hi! Can I get a medium latte, please?" },
+  { "speaker": "Barista", "text": "Sure! Would you like it hot or iced?" },
+  { "speaker": "Customer", "text": "Hot, please." },
+  { "speaker": "Barista", "text": "Any milk preference?" },
+  { "speaker": "Customer", "text": "Just regular milk is fine." },
+  { "speaker": "Barista", "text": "Great. Anything else?" },
+  { "speaker": "Customer", "text": "Hmm… maybe a blueberry muffin too." },
+  { "speaker": "Barista", "text": "Got it. That’ll be $6.50." },
+  { "speaker": "Customer", "text": "Here you go. Thanks!" }
+]

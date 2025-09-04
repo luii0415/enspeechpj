@@ -1,10 +1,14 @@
 import "./App.css";
-import { Klleon } from "./components/klleon/klleon";
+import AzureSpeech from "./components/azure/Azure";
+import { Klleon } from "./components/klleon/Klleon";
 
 function App() {
   return (
     <>
-      <Klleon />
+      <div style={{ display: "flex" }}>
+        <Klleon />
+        <AzureSpeech />
+      </div>
     </>
   );
 }
