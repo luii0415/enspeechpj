@@ -97,7 +97,7 @@ export default function Klleon() {
         sdk_key: SDK_KEY,
         avatar_id: AVATAR_ID,
         voice_code: "en_us",
-        voice_tts_speech_speed: 0.9,
+        voice_tts_speech_speed: 1.0,
         enable_microphone: true,
         log_level: "debug",
       });
